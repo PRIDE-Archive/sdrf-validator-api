@@ -27,7 +27,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: sdrf-validator
-          image: ghcr.io/bigbio/sdrf-validator-api:latest
+          image: ghcr.io/pride-archive/sdrf-validator-api:main
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
@@ -44,7 +44,7 @@ spec:
               cpu: "1000m"
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false
             capabilities:
               drop:
                 - ALL
@@ -71,9 +71,9 @@ spec:
             httpGet:
               path: /health
               port: 5000
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
+            initialDelaySeconds: 45
+            periodSeconds: 15
+            timeoutSeconds: 10
             failureThreshold: 30
       volumes:
         - name: tmp-volume

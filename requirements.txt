@@ -3,8 +3,8 @@ fastapi>=0.115.0
 uvicorn[standard]>=0.24.0
 python-multipart>=0.0.6
 
-# SDRF validation
-sdrf-pipelines[ontology]>=0.0.33
+# SDRF validation (use GitHub to match app imports)
+git+https://github.com/bigbio/sdrf-pipelines.git
 
 # Utilities
 pydantic>=2.0.0
