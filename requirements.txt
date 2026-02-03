@@ -4,7 +4,7 @@ uvicorn[standard]>=0.24.0
 python-multipart>=0.0.6
 
 # SDRF validation
-sdrf-pipelines[ontology]>=0.0.34
+sdrf-pipelines[ontology]>=0.0.33
 
 # Utilities
 pydantic>=2.0.0

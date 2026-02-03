@@ -49,9 +49,17 @@ docker run -p 5000:5000 sdrf-validator-api
 
 ### Kubernetes
 
+Docker image is built and pushed to GitHub Container Registry (GHCR) by CI on push to `main`. Deploy the service and ingress once:
+
 ```bash
 cd k8s
 ./deploy.sh
+```
+
+The deploy script applies `deployment.yaml` and `ingress-pride-services.yaml` (host `www.ebi.ac.uk`, path `/pride/services/sdrf-validator`). When a new image is pushed, rollout to pick it up:
+
+```bash
+kubectl rollout restart deployment/sdrf-validator -n sdrf-validator
 ```
 
 ## Usage Examples

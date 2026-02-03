@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sdrf-validator-ingress-pride-services
+  namespace: sdrf-validator
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/client-max-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: www.ebi.ac.uk
+    http:
+      paths:
+      - path: /pride/services/sdrf-validator(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: sdrf-validator-service
+            port:
+              number: 80
