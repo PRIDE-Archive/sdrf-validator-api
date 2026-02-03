@@ -31,6 +31,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Deployment root path (for ingress sub-paths)
+ROOT_PATH = os.getenv("ROOT_PATH", "")
+
 # Initialize FastAPI app
 app = FastAPI(
     title="SDRF Validator API",
@@ -40,6 +43,7 @@ app = FastAPI(
         "including human, vertebrates, plants, cell-lines, and more."
     ),
     version="1.0.0",
+    root_path=ROOT_PATH,
     docs_url="/docs",
     redoc_url="/redoc",
 )
