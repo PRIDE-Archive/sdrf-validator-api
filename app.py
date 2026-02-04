@@ -102,6 +102,9 @@ class TemplateInfo(BaseModel):
     description: Optional[str] = Field(
         default=None, description="Template description"
     )
+    version: Optional[str] = Field(
+        default=None, description="Template version"
+    )
 
 
 class TemplatesResponse(BaseModel):
@@ -277,12 +280,16 @@ async def get_templates():
     along with legacy name mappings for backwards compatibility.
     """
     templates = []
+    manifest_templates = registry.manifest.get("templates", {}) if registry.manifest else {}
+
     for name in registry.get_schema_names():
         schema = registry.get_schema(name)
+        template_manifest = manifest_templates.get(name, {})
         templates.append(
             TemplateInfo(
                 name=name,
                 description=schema.description if schema else None,
+                version=template_manifest.get("latest"),
             )
         )
 
