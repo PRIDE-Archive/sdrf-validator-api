@@ -102,6 +102,7 @@ class TemplateInfo(BaseModel):
     description: Optional[str] = Field(
         default=None, description="Template description"
     )
+    version: str = Field(default="1.0.0", description="Template version")
 
 
 class TemplatesResponse(BaseModel):
@@ -283,6 +284,7 @@ async def get_templates():
             TemplateInfo(
                 name=name,
                 description=schema.description if schema else None,
+                version=schema.version if schema else "1.0.0",
             )
         )
 
