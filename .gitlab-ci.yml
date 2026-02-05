@@ -13,7 +13,7 @@ kube_rollout_main:
     - chmod 600 ~/.kube/config
     - kubectl config get-contexts
     - kubectl rollout restart deployment/sdrf-validator -n sdrf-validator
-    - kubectl rollout status deployment/sdrf-validator -n sdrf-validator --timeout=120s
+    - kubectl rollout status deployment/sdrf-validator -n sdrf-validator --timeout=600s
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
