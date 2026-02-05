@@ -1,0 +1,19 @@
+# Image is built and pushed by GitHub Actions to GHCR.
+# This pipeline only runs rollout restart on Kubernetes (main branch).
+
+stages:
+  - deploy
+
+kube_rollout_main:
+  stage: deploy
+  image: dtzar/helm-kubectl
+  script:
+    - mkdir -p ~/.kube
+    - echo $KUBE_CONFIG | base64 -d > ~/.kube/config
+    - chmod 600 ~/.kube/config
+    - kubectl config get-contexts
+    - kubectl rollout restart deployment/sdrf-validator -n sdrf-validator
+    - kubectl rollout status deployment/sdrf-validator -n sdrf-validator --timeout=120s
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
