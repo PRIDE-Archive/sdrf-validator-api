@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SDRF Validator</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #ffffff;
+    --panel-muted: #f8fafc;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --success: #16a34a;
+    --success-bg: #f0fdf4;
+    --warning: #d97706;
+    --warning-bg: #fffbeb;
+    --error: #dc2626;
+    --error-bg: #fef2f2;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  header {
+    background: var(--bg);
+    color: white;
+    padding: 1.25rem 2rem;
+    box-shadow: var(--shadow);
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  header .sub {
+    margin-top: 0.25rem;
+    color: #94a3b8;
+    font-size: 0.85rem;
+  }
+
+  header a {
+    color: #93c5fd;
+    text-decoration: none;
+    margin-left: 1rem;
+    font-size: 0.85rem;
+  }
+
+  header a:hover { text-decoration: underline; }
+
+  main {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .card h2 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 720px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+  }
+
+  select, input[type="text"] {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: white;
+    color: var(--text);
+  }
+
+  select:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text);
+    font-weight: normal;
+    margin-bottom: 0;
+    cursor: pointer;
+  }
+
+  #drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    background: var(--panel-muted);
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+  }
+
+  #drop-zone.drag-over {
+    border-color: var(--primary);
+    background: #eff6ff;
+  }
+
+  #drop-zone p {
+    margin: 0.4rem 0;
+    color: var(--text-muted);
+  }
+
+  #drop-zone .file-chosen {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  #file-input { display: none; }
+
+  .button-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 1.25rem;
+  }
+
+  button {
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+
+  .btn-primary:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: white;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { background: var(--panel-muted); }
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .summary-tile {
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel-muted);
+  }
+
+  .summary-tile .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+
+  .summary-tile .value {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .summary-tile.status-valid {
+    background: var(--success-bg);
+    border-color: #bbf7d0;
+  }
+  .summary-tile.status-valid .value { color: var(--success); }
+
+  .summary-tile.status-invalid {
+    background: var(--error-bg);
+    border-color: #fecaca;
+  }
+  .summary-tile.status-invalid .value { color: var(--error); }
+
+  .summary-tile.errors .value { color: var(--error); }
+  .summary-tile.warnings .value { color: var(--warning); }
+
+  .issue-section { margin-top: 1.5rem; }
+
+  .issue-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    margin: 0 0 0.75rem 0;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .badge.error { background: var(--error-bg); color: var(--error); }
+  .badge.warning { background: var(--warning-bg); color: var(--warning); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    background: var(--panel-muted);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  tbody td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  td.col-row, td.col-column {
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .alert {
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .alert.error {
+    background: var(--error-bg);
+    color: var(--error);
+    border: 1px solid #fecaca;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 0.5rem;
+    vertical-align: -2px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .hidden { display: none !important; }
+
+  footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SDRF Validator
+    <a href="docs" target="_blank">API docs</a>
+    <a href="health" target="_blank">Health</a>
+  </h1>
+  <div class="sub">Validate Sample and Data Relationship Format files for proteomics</div>
+</header>
+
+<main>
+  <div id="error-banner" class="alert error hidden"></div>
+
+  <section class="card">
+    <h2>1. Configure validation</h2>
+    <div class="grid-2">
+      <div>
+        <label for="template">Template</label>
+        <select id="template">
+          <option value="default">Loading…</option>
+        </select>
+      </div>
+      <div>
+        <label>Options</label>
+        <div class="checkbox-group">
+          <label>
+            <input type="checkbox" id="skip-ontology" />
+            Skip ontology term validation
+          </label>
+          <label>
+            <input type="checkbox" id="use-ols-cache-only" checked />
+            Use OLS cache only (faster, offline)
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. Upload SDRF file</h2>
+    <div id="drop-zone">
+      <p><strong>Drop your SDRF file here</strong> or click to browse</p>
+      <p style="font-size: 0.8rem">Accepts .tsv, .txt, .sdrf — gzipped (.gz) is fine</p>
+      <p id="file-display" class="file-chosen"></p>
+      <input type="file" id="file-input" accept=".tsv,.txt,.sdrf,.gz,.tsv.gz,.txt.gz" />
+    </div>
+    <div class="button-row">
+      <button id="validate-btn" class="btn-primary" disabled>Validate</button>
+      <button id="reset-btn" class="btn-secondary">Reset</button>
+    </div>
+  </section>
+
+  <section id="results" class="card hidden">
+    <h2>Results</h2>
+    <div id="results-body"></div>
+  </section>
+</main>
+
+<footer>
+  Powered by <code>sdrf-pipelines</code> · <a href="docs" style="color: inherit;">OpenAPI</a>
+</footer>
+
+<script>
+  const templateSelect = document.getElementById('template');
+  const skipOntology = document.getElementById('skip-ontology');
+  const useCacheOnly = document.getElementById('use-ols-cache-only');
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const fileDisplay = document.getElementById('file-display');
+  const validateBtn = document.getElementById('validate-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const resultsCard = document.getElementById('results');
+  const resultsBody = document.getElementById('results-body');
+  const errorBanner = document.getElementById('error-banner');
+
+  let selectedFile = null;
+
+  // Build URLs relative to the page location so it works behind ingress sub-paths.
+  const baseUrl = new URL('.', window.location.href);
+  const apiUrl = (path) => new URL(path, baseUrl).toString();
+
+  function showError(msg) {
+    errorBanner.textContent = msg;
+    errorBanner.classList.remove('hidden');
+  }
+
+  function clearError() {
+    errorBanner.classList.add('hidden');
+    errorBanner.textContent = '';
+  }
+
+  async function loadTemplates() {
+    try {
+      const resp = await fetch(apiUrl('templates'));
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+      templateSelect.innerHTML = '';
+      const sorted = (data.templates || []).slice().sort((a, b) => {
+        // Put default/ms-proteomics first if present
+        if (a.name === 'default') return -1;
+        if (b.name === 'default') return 1;
+        return a.name.localeCompare(b.name);
+      });
+      for (const t of sorted) {
+        const opt = document.createElement('option');
+        opt.value = t.name;
+        opt.textContent = t.description ? `${t.name} — ${t.description}` : t.name;
+        templateSelect.appendChild(opt);
+      }
+    } catch (e) {
+      templateSelect.innerHTML = '<option value="default">default</option>';
+      showError('Could not load template list: ' + e.message + ' (using "default")');
+    }
+  }
+
+  function setFile(file) {
+    selectedFile = file;
+    if (file) {
+      fileDisplay.textContent = `Selected: ${file.name} (${formatSize(file.size)})`;
+      validateBtn.disabled = false;
+    } else {
+      fileDisplay.textContent = '';
+      validateBtn.disabled = true;
+    }
+  }
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) setFile(e.target.files[0]);
+  });
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+  });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length > 0) setFile(e.dataTransfer.files[0]);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    setFile(null);
+    fileInput.value = '';
+    resultsCard.classList.add('hidden');
+    resultsBody.innerHTML = '';
+    clearError();
+  });
+
+  validateBtn.addEventListener('click', validate);
+
+  async function validate() {
+    if (!selectedFile) return;
+    clearError();
+    validateBtn.disabled = true;
+    validateBtn.innerHTML = '<span class="spinner"></span>Validating…';
+    resultsCard.classList.add('hidden');
+
+    try {
+      const params = new URLSearchParams();
+      params.append('template', templateSelect.value);
+      params.append('skip_ontology', skipOntology.checked);
+      params.append('use_ols_cache_only', useCacheOnly.checked);
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const resp = await fetch(apiUrl('validate') + '?' + params.toString(), {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) {
+        const detail = data && data.detail ? data.detail : ('HTTP ' + resp.status);
+        throw new Error(detail);
+      }
+      renderResults(data);
+    } catch (e) {
+      showError('Validation failed: ' + e.message);
+    } finally {
+      validateBtn.disabled = false;
+      validateBtn.textContent = 'Validate';
+    }
+  }
+
+  function renderResults(data) {
+    const valid = data.valid;
+    const errCount = data.error_count || 0;
+    const warnCount = data.warning_count || 0;
+    const templates = (data.templates_used || []).join(', ');
+
+    let html = '';
+    html += '<div class="summary">';
+    html += `
+      <div class="summary-tile ${valid ? 'status-valid' : 'status-invalid'}">
+        <div class="label">Status</div>
+        <div class="value">${valid ? 'Valid' : 'Invalid'}</div>
+      </div>
+      <div class="summary-tile errors">
+        <div class="label">Errors</div>
+        <div class="value">${errCount}</div>
+      </div>
+      <div class="summary-tile warnings">
+        <div class="label">Warnings</div>
+        <div class="value">${warnCount}</div>
+      </div>
+      <div class="summary-tile">
+        <div class="label">Template</div>
+        <div class="value" style="font-size: 1rem; word-break: break-word;">${escapeHtml(templates)}</div>
+      </div>
+    `;
+    html += '</div>';
+
+    html += renderIssueTable('Errors', 'error', data.errors || []);
+    html += renderIssueTable('Warnings', 'warning', data.warnings || []);
+
+    if (errCount === 0 && warnCount === 0) {
+      html += '<div class="empty">No issues found. The file passed all checks.</div>';
+    }
+
+    resultsBody.innerHTML = html;
+    resultsCard.classList.remove('hidden');
+    resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderIssueTable(title, kind, issues) {
+    if (issues.length === 0) return '';
+    const rows = issues.map((i) => `
+      <tr>
+        <td class="col-row">${i.row != null ? escapeHtml(String(i.row)) : '—'}</td>
+        <td class="col-column">${i.column ? escapeHtml(i.column) : '—'}</td>
+        <td>${escapeHtml(i.message || '')}</td>
+      </tr>
+    `).join('');
+    return `
+      <div class="issue-section">
+        <h3><span class="badge ${kind}">${title}</span> <span style="color: var(--text-muted); font-weight: normal;">(${issues.length})</span></h3>
+        <div style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 80px;">Row</th>
+                <th style="width: 200px;">Column</th>
+                <th>Message</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  loadTemplates();
+</script>
+
+</body>
+</html>
