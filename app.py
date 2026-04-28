@@ -15,7 +15,8 @@ from typing import Optional
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from sdrf_pipelines import __version__ as sdrf_version
@@ -57,6 +58,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Static files (frontend UI)
+STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+if os.path.isdir(STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Initialize schema registry
 registry = SchemaRegistry()
@@ -245,14 +251,24 @@ def validate_sdrf_content(
 
 @app.get("/", include_in_schema=False)
 async def root():
-    """Redirect to API documentation."""
+    """Return basic service info and links to UI / docs."""
     return JSONResponse(
         content={
             "message": "SDRF Validator API",
+            "ui": "/html",
             "docs": "/docs",
             "health": "/health",
         }
     )
+
+
+@app.get("/html", include_in_schema=False)
+async def web_ui():
+    """Serve the SDRF Validator web UI."""
+    index_path = os.path.join(STATIC_DIR, "index.html")
+    if not os.path.isfile(index_path):
+        raise HTTPException(status_code=404, detail="UI is not available")
+    return FileResponse(index_path)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["Health"])
