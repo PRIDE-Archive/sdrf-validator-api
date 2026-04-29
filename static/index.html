@@ -109,16 +109,133 @@
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
   }
 
+  .template-picker {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
+  .template-picker .empty-state {
+    padding: 20px;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+  }
+
+  .template-group {
+    padding: 6px 4px;
+    border-bottom: 1px dashed #e9ecef;
+  }
+
+  .template-group:last-child { border-bottom: none; }
+
+  .template-group-header {
+    font-size: 0.72em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6c757d;
+    padding: 4px 8px 6px;
+  }
+
+  .template-group-header .group-pill {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 8px;
+    background: #fff3cd;
+    color: #856404;
+    border-radius: 10px;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .template-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #333;
+    font-size: 0.93em;
+    transition: background 0.15s;
+  }
+
+  .template-checkbox:hover { background: #f0f7ff; }
+
+  .template-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #007bff;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .template-checkbox.checked {
+    background: #e7f3ff;
+    color: #004085;
+    font-weight: 500;
+  }
+
+  .selected-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    min-height: 28px;
+  }
+
+  .selected-chips:empty::before {
+    content: 'No templates selected';
+    color: #adb5bd;
+    font-style: italic;
+    font-size: 0.85em;
+    padding: 4px 0;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 12px;
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    border-radius: 14px;
+    font-size: 0.82em;
+    font-weight: 500;
+  }
+
+  .chip .x {
+    cursor: pointer;
+    font-weight: bold;
+    opacity: 0.85;
+    padding: 0 2px;
+    line-height: 1;
+  }
+
+  .chip .x:hover { opacity: 1; }
+
   .template-description {
     margin-top: 12px;
     padding: 14px 18px;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-left: 4px solid #007bff;
     border-radius: 8px;
-    font-size: 0.95em;
+    font-size: 0.92em;
     color: #495057;
     line-height: 1.55;
     text-align: left;
+  }
+
+  .template-description .desc-row + .desc-row {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #dee2e6;
   }
 
   .template-description .tag {
@@ -540,10 +657,11 @@
     <div class="grid-2">
       <div>
         <div class="field">
-          <label class="field-label" for="template">Template</label>
-          <select id="template">
-            <option value="default">Loading…</option>
-          </select>
+          <label class="field-label">Templates <span style="font-weight: normal; color: #6c757d; font-size: 0.85em;">(combine compatible ones)</span></label>
+          <div id="template-picker" class="template-picker">
+            <div class="empty-state">Loading templates…</div>
+          </div>
+          <div id="selected-chips" class="selected-chips"></div>
           <div id="template-description" class="template-description hidden"></div>
         </div>
       </div>
@@ -604,9 +722,23 @@
 </div>
 
 <script>
-  const templateSelect = document.getElementById('template');
+  const templatePicker = document.getElementById('template-picker');
+  const selectedChips = document.getElementById('selected-chips');
   const templateDescription = document.getElementById('template-description');
   const templateInfo = {};
+
+  // Categorisation. Templates listed under an exclusive group can only be picked
+  // one at a time; non-exclusive groups allow free combination.
+  const TEMPLATE_CATEGORIES = [
+    { name: 'General',         exclusive: false, members: ['default', 'minimum'] },
+    { name: 'Technology',      exclusive: true,  members: ['ms-proteomics', 'affinity-proteomics', 'ms-metabolomics', 'lc-ms-metabolomics', 'gc-ms-metabolomics'] },
+    { name: 'Experiment type', exclusive: false, members: ['dia-acquisition', 'crosslinking', 'single-cell', 'immunopeptidomics'] },
+    { name: 'Affinity assay',  exclusive: true,  members: ['olink', 'somascan'] },
+    { name: 'Organism',        exclusive: true,  members: ['human', 'vertebrates', 'invertebrates', 'plants'] },
+    { name: 'Sample',          exclusive: false, members: ['cell-lines'] },
+    { name: 'Clinical',        exclusive: true,  members: ['clinical-metadata', 'oncology-metadata'] },
+    { name: 'Metaproteomics',  exclusive: true,  members: ['metaproteomics', 'human-gut', 'soil', 'water'] },
+  ];
   const skipOntology = document.getElementById('skip-ontology');
   const useCacheOnly = document.getElementById('use-ols-cache-only');
   const dropZone = document.getElementById('drop-zone');
@@ -641,26 +773,16 @@
       const resp = await fetch(apiUrl('templates'));
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       const data = await resp.json();
-      templateSelect.innerHTML = '';
       const visible = (data.templates || []).filter((t) => !HIDDEN_TEMPLATES.has(t.name));
-      const sorted = visible.sort((a, b) => {
-        if (a.name === 'default') return -1;
-        if (b.name === 'default') return 1;
-        if (a.name === 'ms-proteomics') return -1;
-        if (b.name === 'ms-proteomics') return 1;
-        return a.name.localeCompare(b.name);
-      });
-      for (const t of sorted) {
-        templateInfo[t.name] = t;
-        const opt = document.createElement('option');
-        opt.value = t.name;
-        opt.textContent = humanizeName(t.name);
-        templateSelect.appendChild(opt);
-      }
-      updateTemplateDescription();
+      for (const t of visible) templateInfo[t.name] = t;
+      renderTemplatePicker(visible);
+      updateSelection();
     } catch (e) {
-      templateSelect.innerHTML = '<option value="default">default</option>';
-      showError('Could not load template list: ' + e.message + ' (using "default")');
+      templatePicker.innerHTML = '<div class="empty-state">Could not load templates — using "default"</div>';
+      templateInfo['default'] = { name: 'default', description: '', version: '' };
+      renderTemplatePicker([{ name: 'default' }]);
+      updateSelection();
+      showError('Could not load template list: ' + e.message);
     }
   }
 
@@ -671,31 +793,151 @@
       .join(' ');
   }
 
+  function renderTemplatePicker(templates) {
+    const allNames = new Set(templates.map((t) => t.name));
+    const inAnyCategory = new Set();
+    TEMPLATE_CATEGORIES.forEach((c) => c.members.forEach((m) => inAnyCategory.add(m)));
+
+    const groups = TEMPLATE_CATEGORIES
+      .map((c) => ({
+        name: c.name,
+        exclusive: c.exclusive,
+        members: c.members.filter((m) => allNames.has(m)),
+      }))
+      .filter((g) => g.members.length > 0);
+
+    const otherMembers = templates
+      .map((t) => t.name)
+      .filter((n) => !inAnyCategory.has(n))
+      .sort();
+    if (otherMembers.length) {
+      groups.push({ name: 'Other', exclusive: false, members: otherMembers });
+    }
+
+    templatePicker.innerHTML = '';
+    for (const g of groups) {
+      const groupEl = document.createElement('div');
+      groupEl.className = 'template-group';
+
+      const header = document.createElement('div');
+      header.className = 'template-group-header';
+      header.textContent = g.name;
+      if (g.exclusive) {
+        const pill = document.createElement('span');
+        pill.className = 'group-pill';
+        pill.textContent = 'pick one';
+        header.appendChild(pill);
+      }
+      groupEl.appendChild(header);
+
+      for (const m of g.members) {
+        const wrapper = document.createElement('label');
+        wrapper.className = 'template-checkbox';
+        wrapper.dataset.group = g.name;
+        wrapper.dataset.exclusive = String(g.exclusive);
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = m;
+        if (m === 'default') cb.checked = true;
+        cb.addEventListener('change', onTemplateChange);
+
+        const label = document.createElement('span');
+        label.textContent = humanizeName(m);
+
+        wrapper.appendChild(cb);
+        wrapper.appendChild(label);
+        groupEl.appendChild(wrapper);
+      }
+      templatePicker.appendChild(groupEl);
+    }
+  }
+
+  function onTemplateChange(e) {
+    const cb = e.target;
+    const wrapper = cb.closest('.template-checkbox');
+    if (cb.checked && wrapper && wrapper.dataset.exclusive === 'true') {
+      const group = wrapper.dataset.group;
+      document.querySelectorAll('.template-checkbox[data-group="' + cssEscape(group) + '"] input[type="checkbox"]').forEach((other) => {
+        if (other !== cb) other.checked = false;
+      });
+    }
+    updateSelection();
+  }
+
+  function cssEscape(s) {
+    if (window.CSS && CSS.escape) return CSS.escape(s);
+    return String(s).replace(/["\\]/g, '\\$&');
+  }
+
+  function getSelectedTemplates() {
+    return Array.from(templatePicker.querySelectorAll('input[type="checkbox"]:checked')).map((cb) => cb.value);
+  }
+
+  function updateSelection() {
+    document.querySelectorAll('.template-checkbox').forEach((w) => {
+      const cb = w.querySelector('input[type="checkbox"]');
+      w.classList.toggle('checked', !!(cb && cb.checked));
+    });
+    renderChips();
+    updateTemplateDescription();
+    updateValidateButton();
+  }
+
+  function renderChips() {
+    const selected = getSelectedTemplates();
+    selectedChips.innerHTML = '';
+    for (const name of selected) {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = humanizeName(name) + ' ';
+      const x = document.createElement('span');
+      x.className = 'x';
+      x.textContent = '×';
+      x.title = 'Remove';
+      x.addEventListener('click', () => {
+        const cb = templatePicker.querySelector('input[type="checkbox"][value="' + cssEscape(name) + '"]');
+        if (cb) {
+          cb.checked = false;
+          updateSelection();
+        }
+      });
+      chip.appendChild(x);
+      selectedChips.appendChild(chip);
+    }
+  }
+
   function updateTemplateDescription() {
-    const t = templateInfo[templateSelect.value];
-    if (!t || (!t.description && !t.version)) {
+    const selected = getSelectedTemplates();
+    const rows = selected
+      .map((name) => {
+        const t = templateInfo[name];
+        if (!t || (!t.description && !t.version)) return '';
+        const parts = [`<span class="tag">${escapeHtml(t.name)}</span>`];
+        if (t.description) parts.push(escapeHtml(t.description));
+        if (t.version) parts.push(`<span class="ver">v${escapeHtml(t.version)}</span>`);
+        return `<div class="desc-row">${parts.join(' ')}</div>`;
+      })
+      .filter(Boolean);
+    if (rows.length === 0) {
       templateDescription.classList.add('hidden');
       templateDescription.innerHTML = '';
       return;
     }
-    const parts = [`<span class="tag">${escapeHtml(t.name)}</span>`];
-    if (t.description) parts.push(escapeHtml(t.description));
-    if (t.version) parts.push(`<span class="ver">v${escapeHtml(t.version)}</span>`);
-    templateDescription.innerHTML = parts.join(' ');
+    templateDescription.innerHTML = rows.join('');
     templateDescription.classList.remove('hidden');
   }
 
-  templateSelect.addEventListener('change', updateTemplateDescription);
+  function updateValidateButton() {
+    validateBtn.disabled = !selectedFile || getSelectedTemplates().length === 0;
+  }
 
   function setFile(file) {
     selectedFile = file;
-    if (file) {
-      fileDisplay.textContent = `✓ Selected: ${file.name} (${formatSize(file.size)})`;
-      validateBtn.disabled = false;
-    } else {
-      fileDisplay.textContent = '';
-      validateBtn.disabled = true;
-    }
+    fileDisplay.textContent = file
+      ? `✓ Selected: ${file.name} (${formatSize(file.size)})`
+      : '';
+    updateValidateButton();
   }
 
   function formatSize(bytes) {
@@ -738,7 +980,7 @@
 
     try {
       const params = new URLSearchParams();
-      params.append('template', templateSelect.value);
+      for (const t of getSelectedTemplates()) params.append('template', t);
       params.append('skip_ontology', skipOntology.checked);
       params.append('use_ols_cache_only', useCacheOnly.checked);
 
