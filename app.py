@@ -299,8 +299,8 @@ async def get_templates():
         templates.append(
             TemplateInfo(
                 name=name,
-                description=schema.description if schema else None,
-                version=schema.version if schema else "1.0.0",
+                description=getattr(schema, "description", None) if schema else None,
+                version=getattr(schema, "version", "1.0.0") if schema else "1.0.0",
             )
         )
 

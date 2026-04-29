@@ -120,6 +120,34 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
 
+  .template-description {
+    margin-top: 0.6rem;
+    padding: 0.65rem 0.85rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-left: 3px solid var(--primary);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #1e3a8a;
+    line-height: 1.45;
+  }
+
+  .template-description .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--primary);
+    margin-right: 0.4rem;
+  }
+
+  .template-description .ver {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-left: 0.4rem;
+  }
+
   .checkbox-group {
     display: flex;
     flex-direction: column;
@@ -367,6 +395,7 @@
         <select id="template">
           <option value="default">Loading…</option>
         </select>
+        <div id="template-description" class="template-description hidden"></div>
       </div>
       <div>
         <label>Options</label>
@@ -410,6 +439,8 @@
 
 <script>
   const templateSelect = document.getElementById('template');
+  const templateDescription = document.getElementById('template-description');
+  const templateInfo = {};
   const skipOntology = document.getElementById('skip-ontology');
   const useCacheOnly = document.getElementById('use-ols-cache-only');
   const dropZone = document.getElementById('drop-zone');
@@ -450,16 +481,41 @@
         return a.name.localeCompare(b.name);
       });
       for (const t of sorted) {
+        templateInfo[t.name] = t;
         const opt = document.createElement('option');
         opt.value = t.name;
-        opt.textContent = t.description ? `${t.name} — ${t.description}` : t.name;
+        opt.textContent = humanizeName(t.name);
         templateSelect.appendChild(opt);
       }
+      updateTemplateDescription();
     } catch (e) {
       templateSelect.innerHTML = '<option value="default">default</option>';
       showError('Could not load template list: ' + e.message + ' (using "default")');
     }
   }
+
+  function humanizeName(name) {
+    return name
+      .split(/[-_]/)
+      .map((s) => s.length ? s[0].toUpperCase() + s.slice(1) : s)
+      .join(' ');
+  }
+
+  function updateTemplateDescription() {
+    const t = templateInfo[templateSelect.value];
+    if (!t || (!t.description && !t.version)) {
+      templateDescription.classList.add('hidden');
+      templateDescription.innerHTML = '';
+      return;
+    }
+    const parts = [`<span class="tag">${escapeHtml(t.name)}</span>`];
+    if (t.description) parts.push(escapeHtml(t.description));
+    if (t.version) parts.push(`<span class="ver">v${escapeHtml(t.version)}</span>`);
+    templateDescription.innerHTML = parts.join(' ');
+    templateDescription.classList.remove('hidden');
+  }
+
+  templateSelect.addEventListener('change', updateTemplateDescription);
 
   function setFile(file) {
     selectedFile = file;
