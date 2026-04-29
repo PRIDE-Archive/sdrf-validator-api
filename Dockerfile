@@ -22,8 +22,12 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Cache-bust the pip install layer so unpinned VCS deps (sdrf-pipelines main HEAD)
+# are re-fetched on every build. The CI pipeline passes the commit SHA here.
+ARG CACHEBUST=dev
+
+# Install Python dependencies. --upgrade ensures any unpinned VCS dep tracks main HEAD.
+RUN echo "cachebust=$CACHEBUST" && pip install --upgrade --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY app.py .

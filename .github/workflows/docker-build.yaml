@@ -57,6 +57,10 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # Pass the commit SHA as CACHEBUST so the pip-install layer always
+          # re-runs and unpinned VCS deps (sdrf-pipelines main HEAD) are refreshed.
+          build-args: |
+            CACHEBUST=${{ github.sha }}
 
   test:
     runs-on: ubuntu-latest

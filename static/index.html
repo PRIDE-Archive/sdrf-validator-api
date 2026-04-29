@@ -620,6 +620,9 @@
 
   let selectedFile = null;
 
+  // Construction-artifact templates that aren't valid for direct use.
+  const HIDDEN_TEMPLATES = new Set(['base']);
+
   const baseUrl = new URL('.', window.location.href);
   const apiUrl = (path) => new URL(path, baseUrl).toString();
 
@@ -639,7 +642,8 @@
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       const data = await resp.json();
       templateSelect.innerHTML = '';
-      const sorted = (data.templates || []).slice().sort((a, b) => {
+      const visible = (data.templates || []).filter((t) => !HIDDEN_TEMPLATES.has(t.name));
+      const sorted = visible.sort((a, b) => {
         if (a.name === 'default') return -1;
         if (b.name === 'default') return 1;
         if (a.name === 'ms-proteomics') return -1;
