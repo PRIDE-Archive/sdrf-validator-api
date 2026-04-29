@@ -250,24 +250,19 @@ def validate_sdrf_content(
 
 
 @app.get("/", include_in_schema=False)
-async def root():
-    """Return basic service info and links to UI / docs."""
-    return JSONResponse(
-        content={
-            "message": "SDRF Validator API",
-            "ui": "/html",
-            "docs": "/docs",
-            "health": "/health",
-        }
-    )
-
-
+@app.get("/ui", include_in_schema=False)
 @app.get("/html", include_in_schema=False)
 async def web_ui():
-    """Serve the SDRF Validator web UI."""
+    """Serve the SDRF Validator web UI (also reachable at /ui and /html)."""
     index_path = os.path.join(STATIC_DIR, "index.html")
     if not os.path.isfile(index_path):
-        raise HTTPException(status_code=404, detail="UI is not available")
+        return JSONResponse(
+            content={
+                "message": "SDRF Validator API",
+                "docs": "/docs",
+                "health": "/health",
+            }
+        )
     return FileResponse(index_path)
 
 
