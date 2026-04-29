@@ -250,10 +250,8 @@ def validate_sdrf_content(
 
 
 @app.get("/", include_in_schema=False)
-@app.get("/ui", include_in_schema=False)
-@app.get("/html", include_in_schema=False)
 async def web_ui():
-    """Serve the SDRF Validator web UI (also reachable at /ui and /html)."""
+    """Serve the SDRF Validator web UI."""
     index_path = os.path.join(STATIC_DIR, "index.html")
     if not os.path.isfile(index_path):
         return JSONResponse(
@@ -263,7 +261,11 @@ async def web_ui():
                 "health": "/health",
             }
         )
-    return FileResponse(index_path)
+    # no-cache so browsers always revalidate and pick up UI updates after deploys
+    return FileResponse(
+        index_path,
+        headers={"Cache-Control": "no-cache, must-revalidate"},
+    )
 
 
 @app.get("/health", response_model=HealthResponse, tags=["Health"])

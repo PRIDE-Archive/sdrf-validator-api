@@ -870,8 +870,18 @@
   // Construction-artifact templates that aren't valid for direct use.
   const HIDDEN_TEMPLATES = new Set(['base']);
 
-  const baseUrl = new URL('.', window.location.href);
-  const apiUrl = (path) => new URL(path, baseUrl).toString();
+  // Derive the API base from the current pathname. This works whether the page
+  // is loaded at /pride/services/sdrf-validator, /sdrf-validator/
+  // — we strip the UI suffix and ensure a trailing slash so relative paths join
+  // cleanly, instead of the URL spec's default of climbing one directory.
+  function computeApiBase() {
+    let p = window.location.pathname || '/';
+    while (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+    if (!p.endsWith('/')) p = p + '/';
+    return window.location.origin + p;
+  }
+  const baseUrl = computeApiBase();
+  const apiUrl = (path) => baseUrl + String(path).replace(/^\/+/, '');
 
   function showError(msg) {
     errorBanner.textContent = msg;
