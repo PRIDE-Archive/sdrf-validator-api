@@ -306,7 +306,7 @@ async def get_templates():
 
     return TemplatesResponse(
         templates=sorted(templates, key=lambda x: x.name),
-        legacy_mappings=SchemaRegistry.LEGACY_NAME_MAPPING,
+        legacy_mappings=getattr(SchemaRegistry, "LEGACY_NAME_MAPPING", {}),
     )
 
 
