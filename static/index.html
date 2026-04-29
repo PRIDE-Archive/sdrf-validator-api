@@ -5,437 +5,603 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SDRF Validator</title>
 <style>
-  :root {
-    --bg: #0f172a;
-    --panel: #ffffff;
-    --panel-muted: #f8fafc;
-    --border: #e2e8f0;
-    --text: #0f172a;
-    --text-muted: #64748b;
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --success: #16a34a;
-    --success-bg: #f0fdf4;
-    --warning: #d97706;
-    --warning-bg: #fffbeb;
-    --error: #dc2626;
-    --error-bg: #fef2f2;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
-
-  * { box-sizing: border-box; }
 
   body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      "Helvetica Neue", Arial, sans-serif;
-    background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
-    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
-    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
   }
 
-  header {
-    background: var(--bg);
-    color: white;
-    padding: 1.25rem 2rem;
-    box-shadow: var(--shadow);
+  .container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    max-width: 900px;
+    width: 100%;
+    text-align: center;
   }
 
-  header h1 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+  .logo {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
   }
 
-  header .sub {
-    margin-top: 0.25rem;
-    color: #94a3b8;
-    font-size: 0.85rem;
+  .subtitle {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.1em;
   }
 
-  header a {
-    color: #93c5fd;
+  .top-links {
+    margin-bottom: 25px;
+  }
+
+  .top-links a {
+    color: #007bff;
     text-decoration: none;
-    margin-left: 1rem;
-    font-size: 0.85rem;
-  }
-
-  header a:hover { text-decoration: underline; }
-
-  main {
-    max-width: 1100px;
-    margin: 2rem auto;
-    padding: 0 1.5rem;
-  }
-
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .card h2 {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
-  @media (max-width: 720px) {
-    .grid-2 { grid-template-columns: 1fr; }
-  }
-
-  label {
-    display: block;
-    font-size: 0.85rem;
+    margin: 0 10px;
+    font-size: 0.95em;
     font-weight: 500;
-    color: var(--text-muted);
-    margin-bottom: 0.4rem;
+  }
+
+  .top-links a:hover { text-decoration: underline; }
+
+  .step {
+    margin: 20px 0;
+    padding: 25px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    text-align: left;
+  }
+
+  .step h3 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+    text-align: center;
+  }
+
+  .step p {
+    color: #666;
+    margin-bottom: 15px;
+    line-height: 1.6;
+  }
+
+  .field {
+    margin-bottom: 18px;
+  }
+
+  .field-label {
+    display: block;
+    color: #495057;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 0.95em;
   }
 
   select, input[type="text"] {
     width: 100%;
-    padding: 0.55rem 0.75rem;
-    border: 1px solid var(--border);
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 1em;
     background: white;
-    color: var(--text);
+    color: #333;
+    font-family: inherit;
   }
 
   select:focus, input[type="text"]:focus {
     outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
   }
 
   .template-description {
-    margin-top: 0.6rem;
-    padding: 0.65rem 0.85rem;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-left: 3px solid var(--primary);
-    border-radius: 6px;
-    font-size: 0.85rem;
-    color: #1e3a8a;
-    line-height: 1.45;
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid #007bff;
+    border-radius: 8px;
+    font-size: 0.95em;
+    color: #495057;
+    line-height: 1.55;
+    text-align: left;
   }
 
   .template-description .tag {
     display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-weight: bold;
+    color: #007bff;
+    margin-right: 8px;
+    font-size: 0.85em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--primary);
-    margin-right: 0.4rem;
+    letter-spacing: 0.04em;
   }
 
   .template-description .ver {
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    margin-left: 0.4rem;
+    color: #6c757d;
+    font-size: 0.85em;
+    margin-left: 8px;
+    font-weight: 500;
   }
 
   .checkbox-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+    gap: 10px;
+    padding: 12px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
   }
 
   .checkbox-group label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--text);
-    font-weight: normal;
-    margin-bottom: 0;
+    gap: 10px;
+    color: #495057;
+    cursor: pointer;
+    font-size: 0.95em;
+  }
+
+  .checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #007bff;
     cursor: pointer;
   }
 
   #drop-zone {
-    border: 2px dashed var(--border);
-    border-radius: 12px;
-    padding: 2rem;
+    border: 2px dashed #ced4da;
+    border-radius: 10px;
+    padding: 35px 20px;
     text-align: center;
-    background: var(--panel-muted);
-    transition: border-color 0.2s, background 0.2s;
+    background: white;
+    transition: all 0.3s ease;
     cursor: pointer;
   }
 
-  #drop-zone.drag-over {
-    border-color: var(--primary);
-    background: #eff6ff;
+  #drop-zone:hover, #drop-zone.drag-over {
+    border-color: #007bff;
+    background: #f0f7ff;
+    transform: translateY(-1px);
+  }
+
+  #drop-zone .drop-icon {
+    font-size: 2.5em;
+    margin-bottom: 10px;
   }
 
   #drop-zone p {
-    margin: 0.4rem 0;
-    color: var(--text-muted);
+    margin: 4px 0;
+    color: #666;
+  }
+
+  #drop-zone .hint {
+    font-size: 0.85em;
+    color: #999;
   }
 
   #drop-zone .file-chosen {
-    color: var(--text);
-    font-weight: 500;
+    margin-top: 12px;
+    color: #007bff;
+    font-weight: bold;
   }
 
   #file-input { display: none; }
 
   .button-row {
     display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    margin-top: 1.25rem;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 10px;
   }
 
-  button {
-    padding: 0.6rem 1.25rem;
-    border-radius: 8px;
-    border: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-
-  .btn-primary {
-    background: var(--primary);
+  .upload-btn, .process-btn, .reset-btn {
     color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0;
+    font-family: inherit;
   }
 
-  .btn-primary:hover:not(:disabled) {
-    background: var(--primary-hover);
+  .upload-btn, .process-btn {
+    background: linear-gradient(45deg, #28a745, #20c997);
   }
 
-  .btn-primary:disabled {
-    background: #94a3b8;
+  .upload-btn:hover:not(:disabled), .process-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+  }
+
+  .upload-btn:disabled, .process-btn:disabled {
+    opacity: 0.55;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 
-  .btn-secondary {
-    background: white;
-    color: var(--text);
-    border: 1px solid var(--border);
+  .reset-btn {
+    background: linear-gradient(45deg, #fd7e14, #e8590c);
   }
 
-  .btn-secondary:hover { background: var(--panel-muted); }
+  .reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(253, 126, 20, 0.3);
+  }
+
+  .loading {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    vertical-align: -3px;
+    margin-right: 10px;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .alert {
+    padding: 15px 18px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    font-size: 0.95em;
+    text-align: left;
+  }
+
+  .alert.error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+  }
+
+  .result-banner {
+    padding: 22px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    text-align: left;
+  }
+
+  .result-banner.success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+  }
+
+  .result-banner.error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+  }
+
+  .result-banner .big-icon {
+    font-size: 2.5em;
+    line-height: 1;
+  }
+
+  .result-banner h2 {
+    margin: 0 0 4px 0;
+    font-size: 1.4em;
+  }
+
+  .result-banner p {
+    margin: 0;
+    color: inherit;
+    opacity: 0.85;
+  }
 
   .summary {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
   }
 
   .summary-tile {
-    padding: 1rem;
+    padding: 18px;
     border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--panel-muted);
+    background: white;
+    border: 2px solid #e9ecef;
+    text-align: center;
   }
 
   .summary-tile .label {
-    font-size: 0.75rem;
+    font-size: 0.75em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-    margin-bottom: 0.4rem;
-    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #6c757d;
+    margin-bottom: 6px;
+    font-weight: bold;
   }
 
   .summary-tile .value {
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #333;
   }
 
-  .summary-tile.status-valid {
-    background: var(--success-bg);
-    border-color: #bbf7d0;
+  .summary-tile.errors {
+    background: linear-gradient(135deg, #fff5f5 0%, #fee 100%);
+    border-color: #f5c6cb;
   }
-  .summary-tile.status-valid .value { color: var(--success); }
+  .summary-tile.errors .value { color: #dc3545; }
 
-  .summary-tile.status-invalid {
-    background: var(--error-bg);
-    border-color: #fecaca;
+  .summary-tile.warnings {
+    background: linear-gradient(135deg, #fffbf0 0%, #fff3cd 100%);
+    border-color: #ffeaa7;
   }
-  .summary-tile.status-invalid .value { color: var(--error); }
+  .summary-tile.warnings .value { color: #d97706; }
 
-  .summary-tile.errors .value { color: var(--error); }
-  .summary-tile.warnings .value { color: var(--warning); }
+  .issue-section { margin-top: 24px; text-align: left; }
 
-  .issue-section { margin-top: 1.5rem; }
-
-  .issue-section h3 {
+  .issue-section h4 {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.95rem;
-    margin: 0 0 0.75rem 0;
+    gap: 10px;
+    color: #495057;
+    margin-bottom: 12px;
+    font-size: 1.05em;
   }
 
   .badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.15rem 0.55rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
-  .badge.error { background: var(--error-bg); color: var(--error); }
-  .badge.warning { background: var(--warning-bg); color: var(--warning); }
+  .badge.error { background: #f8d7da; color: #721c24; }
+  .badge.warning { background: #fff3cd; color: #856404; }
+
+  .issue-count {
+    color: #6c757d;
+    font-weight: normal;
+    font-size: 0.9em;
+  }
+
+  .issue-table-wrap {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+  }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.875rem;
+    font-size: 0.92em;
   }
 
   thead th {
     text-align: left;
-    padding: 0.6rem 0.75rem;
-    background: var(--panel-muted);
-    border-bottom: 1px solid var(--border);
-    font-weight: 600;
-    color: var(--text-muted);
-    font-size: 0.8rem;
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: bold;
+    color: #495057;
+    font-size: 0.78em;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
   }
 
   tbody td {
-    padding: 0.6rem 0.75rem;
-    border-bottom: 1px solid var(--border);
+    padding: 11px 15px;
+    border-bottom: 1px solid #f1f3f5;
     vertical-align: top;
+    color: #333;
   }
 
   tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #f8f9fa; }
 
   td.col-row, td.col-column {
-    color: var(--text-muted);
+    color: #6c757d;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
 
   .empty {
-    padding: 2rem;
+    padding: 30px;
     text-align: center;
-    color: var(--text-muted);
+    color: #6c757d;
     font-style: italic;
-  }
-
-  .alert {
-    padding: 0.85rem 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-  }
-
-  .alert.error {
-    background: var(--error-bg);
-    color: var(--error);
-    border: 1px solid #fecaca;
-  }
-
-  .spinner {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-right: 0.5rem;
-    vertical-align: -2px;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
   }
 
   .hidden { display: none !important; }
 
-  footer {
+  .about {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    margin-top: 40px;
+    padding: 30px;
+    border-top: 3px solid #007bff;
+    border-radius: 0 0 15px 15px;
+    margin-left: -40px;
+    margin-right: -40px;
+    margin-bottom: -40px;
     text-align: center;
-    padding: 2rem 1rem;
-    color: var(--text-muted);
-    font-size: 0.8rem;
+  }
+
+  .about h3 {
+    color: #333;
+    margin-bottom: 16px;
+    font-size: 1.5em;
+  }
+
+  .about p {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 22px;
+    font-size: 1.05em;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .about-links {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .about-links a {
+    display: inline-block;
+    padding: 11px 22px;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    font-size: 0.95em;
+  }
+
+  .about-links a.lnk-blue {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+  }
+  .about-links a.lnk-green {
+    background: linear-gradient(45deg, #28a745, #20c997);
+  }
+  .about-links a.lnk-purple {
+    background: linear-gradient(45deg, #6f42c1, #5a32a3);
+  }
+
+  .about-links a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .about .footer {
+    border-top: 1px solid #dee2e6;
+    padding-top: 18px;
+  }
+
+  .about .footer p {
+    color: #6c757d;
+    font-size: 0.9em;
+    margin: 0;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 720px) {
+    .container { padding: 25px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .about { margin-left: -25px; margin-right: -25px; margin-bottom: -25px; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>SDRF Validator
-    <a href="docs" target="_blank">API docs</a>
-    <a href="health" target="_blank">Health</a>
-  </h1>
-  <div class="sub">Validate Sample and Data Relationship Format files for proteomics</div>
-</header>
+<div class="container">
+  <div class="logo">SDRF Validator</div>
+  <div class="subtitle">Validate Sample and Data Relationship Format files for proteomics</div>
 
-<main>
   <div id="error-banner" class="alert error hidden"></div>
 
-  <section class="card">
-    <h2>1. Configure validation</h2>
+  <div class="step">
+    <h3>1️⃣ Configure validation</h3>
     <div class="grid-2">
       <div>
-        <label for="template">Template</label>
-        <select id="template">
-          <option value="default">Loading…</option>
-        </select>
-        <div id="template-description" class="template-description hidden"></div>
+        <div class="field">
+          <label class="field-label" for="template">Template</label>
+          <select id="template">
+            <option value="default">Loading…</option>
+          </select>
+          <div id="template-description" class="template-description hidden"></div>
+        </div>
       </div>
       <div>
-        <label>Options</label>
-        <div class="checkbox-group">
-          <label>
-            <input type="checkbox" id="skip-ontology" />
-            Skip ontology term validation
-          </label>
-          <label>
-            <input type="checkbox" id="use-ols-cache-only" checked />
-            Use OLS cache only (faster, offline)
-          </label>
+        <div class="field">
+          <label class="field-label">Options</label>
+          <div class="checkbox-group">
+            <label>
+              <input type="checkbox" id="skip-ontology" />
+              Skip ontology term validation
+            </label>
+            <label>
+              <input type="checkbox" id="use-ols-cache-only" checked />
+              Use OLS cache only (faster, offline)
+            </label>
+          </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <section class="card">
-    <h2>2. Upload SDRF file</h2>
+  <div class="step">
+    <h3>2️⃣ Upload SDRF file</h3>
     <div id="drop-zone">
+      <div class="drop-icon">📄</div>
       <p><strong>Drop your SDRF file here</strong> or click to browse</p>
-      <p style="font-size: 0.8rem">Accepts .tsv, .txt, .sdrf — gzipped (.gz) is fine</p>
+      <p class="hint">Accepts .tsv, .txt, .sdrf — gzipped (.gz) is fine</p>
       <p id="file-display" class="file-chosen"></p>
       <input type="file" id="file-input" accept=".tsv,.txt,.sdrf,.gz,.tsv.gz,.txt.gz" />
     </div>
     <div class="button-row">
-      <button id="validate-btn" class="btn-primary" disabled>Validate</button>
-      <button id="reset-btn" class="btn-secondary">Reset</button>
+      <button id="validate-btn" class="upload-btn" disabled>✓ Validate</button>
+      <button id="reset-btn" class="reset-btn">↺ Reset</button>
     </div>
-  </section>
+  </div>
 
-  <section id="results" class="card hidden">
-    <h2>Results</h2>
+  <div id="results" class="step hidden">
+    <h3>📊 Validation Results</h3>
     <div id="results-body"></div>
-  </section>
-</main>
+  </div>
 
-<footer>
-  Powered by <code>sdrf-pipelines</code> · <a href="docs" style="color: inherit;">OpenAPI</a>
-</footer>
+  <div class="about">
+    <h3>About SDRF Validator</h3>
+    <p>
+      <strong>SDRF Validator</strong> checks Sample and Data Relationship Format files
+      against community-curated proteomics templates. It verifies required columns, value
+      formats, ontology terms, and column ordering — so your metadata is publication-ready.
+    </p>
+    <div class="about-links">
+      <a class="lnk-blue" href="https://github.com/bigbio/sdrf-pipelines" target="_blank">🌐 sdrf-pipelines</a>
+      <a class="lnk-green" href="docs" target="_blank">📂 API Docs</a>
+      <a class="lnk-purple" href="https://www.ebi.ac.uk/pride/" target="_blank">📊 PRIDE Archive</a>
+    </div>
+    <div class="footer">
+      <p>Powered by <strong>sdrf-pipelines</strong> · part of the PRIDE proteomics ecosystem</p>
+    </div>
+  </div>
+</div>
 
 <script>
   const templateSelect = document.getElementById('template');
@@ -454,7 +620,6 @@
 
   let selectedFile = null;
 
-  // Build URLs relative to the page location so it works behind ingress sub-paths.
   const baseUrl = new URL('.', window.location.href);
   const apiUrl = (path) => new URL(path, baseUrl).toString();
 
@@ -475,9 +640,10 @@
       const data = await resp.json();
       templateSelect.innerHTML = '';
       const sorted = (data.templates || []).slice().sort((a, b) => {
-        // Put default/ms-proteomics first if present
         if (a.name === 'default') return -1;
         if (b.name === 'default') return 1;
+        if (a.name === 'ms-proteomics') return -1;
+        if (b.name === 'ms-proteomics') return 1;
         return a.name.localeCompare(b.name);
       });
       for (const t of sorted) {
@@ -520,7 +686,7 @@
   function setFile(file) {
     selectedFile = file;
     if (file) {
-      fileDisplay.textContent = `Selected: ${file.name} (${formatSize(file.size)})`;
+      fileDisplay.textContent = `✓ Selected: ${file.name} (${formatSize(file.size)})`;
       validateBtn.disabled = false;
     } else {
       fileDisplay.textContent = '';
@@ -538,7 +704,6 @@
   fileInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) setFile(e.target.files[0]);
   });
-
   dropZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     dropZone.classList.add('drag-over');
@@ -564,7 +729,7 @@
     if (!selectedFile) return;
     clearError();
     validateBtn.disabled = true;
-    validateBtn.innerHTML = '<span class="spinner"></span>Validating…';
+    validateBtn.innerHTML = '<span class="loading"></span>Validating…';
     resultsCard.classList.add('hidden');
 
     try {
@@ -591,7 +756,7 @@
       showError('Validation failed: ' + e.message);
     } finally {
       validateBtn.disabled = false;
-      validateBtn.textContent = 'Validate';
+      validateBtn.textContent = '✓ Validate';
     }
   }
 
@@ -602,12 +767,21 @@
     const templates = (data.templates_used || []).join(', ');
 
     let html = '';
+    html += `
+      <div class="result-banner ${valid ? 'success' : 'error'}">
+        <div class="big-icon">${valid ? '✅' : '❌'}</div>
+        <div>
+          <h2>${valid ? 'File is valid' : 'File has errors'}</h2>
+          <p>${valid
+            ? (warnCount > 0 ? `Validation passed with ${warnCount} warning${warnCount === 1 ? '' : 's'}.` : 'No issues found.')
+            : `Found ${errCount} error${errCount === 1 ? '' : 's'}${warnCount > 0 ? ` and ${warnCount} warning${warnCount === 1 ? '' : 's'}` : ''}.`
+          }</p>
+        </div>
+      </div>
+    `;
+
     html += '<div class="summary">';
     html += `
-      <div class="summary-tile ${valid ? 'status-valid' : 'status-invalid'}">
-        <div class="label">Status</div>
-        <div class="value">${valid ? 'Valid' : 'Invalid'}</div>
-      </div>
       <div class="summary-tile errors">
         <div class="label">Errors</div>
         <div class="value">${errCount}</div>
@@ -618,7 +792,7 @@
       </div>
       <div class="summary-tile">
         <div class="label">Template</div>
-        <div class="value" style="font-size: 1rem; word-break: break-word;">${escapeHtml(templates)}</div>
+        <div class="value" style="font-size: 1em; word-break: break-word;">${escapeHtml(templates)}</div>
       </div>
     `;
     html += '</div>';
@@ -627,7 +801,7 @@
     html += renderIssueTable('Warnings', 'warning', data.warnings || []);
 
     if (errCount === 0 && warnCount === 0) {
-      html += '<div class="empty">No issues found. The file passed all checks.</div>';
+      html += '<div class="empty">🎉 No issues found. The file passed all checks.</div>';
     }
 
     resultsBody.innerHTML = html;
@@ -646,13 +820,13 @@
     `).join('');
     return `
       <div class="issue-section">
-        <h3><span class="badge ${kind}">${title}</span> <span style="color: var(--text-muted); font-weight: normal;">(${issues.length})</span></h3>
-        <div style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+        <h4><span class="badge ${kind}">${title}</span> <span class="issue-count">(${issues.length})</span></h4>
+        <div class="issue-table-wrap">
           <table>
             <thead>
               <tr>
                 <th style="width: 80px;">Row</th>
-                <th style="width: 200px;">Column</th>
+                <th style="width: 220px;">Column</th>
                 <th>Message</th>
               </tr>
             </thead>
