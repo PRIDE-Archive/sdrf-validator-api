@@ -112,113 +112,214 @@
   .template-picker {
     background: white;
     border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 6px;
-    max-height: 320px;
+    border-radius: 12px;
+    padding: 10px;
+    max-height: 380px;
     overflow-y: auto;
   }
 
+  .template-picker::-webkit-scrollbar { width: 8px; }
+  .template-picker::-webkit-scrollbar-track { background: #f8f9fa; border-radius: 4px; }
+  .template-picker::-webkit-scrollbar-thumb { background: #ced4da; border-radius: 4px; }
+  .template-picker::-webkit-scrollbar-thumb:hover { background: #adb5bd; }
+
   .template-picker .empty-state {
-    padding: 20px;
+    padding: 24px;
     text-align: center;
     color: #6c757d;
     font-style: italic;
   }
 
   .template-group {
-    padding: 6px 4px;
-    border-bottom: 1px dashed #e9ecef;
+    padding: 10px 4px 12px;
+    border-bottom: 1px solid #f1f3f5;
   }
 
-  .template-group:last-child { border-bottom: none; }
+  .template-group:last-child { border-bottom: none; padding-bottom: 4px; }
+  .template-group:first-child { padding-top: 4px; }
 
   .template-group-header {
-    font-size: 0.72em;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #6c757d;
-    padding: 4px 8px 6px;
-  }
-
-  .template-group-header .group-pill {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 1px 8px;
-    background: #fff3cd;
-    color: #856404;
-    border-radius: 10px;
-    font-size: 0.85em;
-    font-weight: bold;
-    text-transform: none;
-    letter-spacing: 0;
-  }
-
-  .template-checkbox {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    color: #333;
-    font-size: 0.93em;
-    transition: background 0.15s;
+    padding: 4px 6px 10px;
   }
 
-  .template-checkbox:hover { background: #f0f7ff; }
+  .template-group-header .icon {
+    font-size: 1.1em;
+    line-height: 1;
+  }
+
+  .template-group-header .name {
+    font-size: 0.78em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #495057;
+  }
+
+  .template-group-header .group-pill {
+    margin-left: auto;
+    padding: 2px 10px;
+    background: linear-gradient(45deg, #fff3cd, #ffe8a1);
+    color: #856404;
+    border-radius: 12px;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: 1px solid #ffeaa7;
+  }
+
+  .template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 6px;
+    padding: 0 2px;
+  }
+
+  .template-checkbox {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #e9ecef;
+    background: #fafbfc;
+    cursor: pointer;
+    color: #495057;
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+
+  .template-checkbox:hover {
+    border-color: #b8daff;
+    background: #f0f7ff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.08);
+  }
 
   .template-checkbox input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: #007bff;
-    cursor: pointer;
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .template-checkbox .check-indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ced4da;
+    border-radius: 5px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+    transition: all 0.15s ease;
+  }
+
+  .template-checkbox .check-indicator::after {
+    content: '';
+    width: 5px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) scale(0);
+    transition: transform 0.15s ease;
+    margin-top: -2px;
   }
 
   .template-checkbox.checked {
-    background: #e7f3ff;
-    color: #004085;
-    font-weight: 500;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-color: #0056b3;
+    color: white;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.25);
+  }
+
+  .template-checkbox.checked .check-indicator {
+    border-color: white;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .template-checkbox.checked .check-indicator::after {
+    transform: rotate(45deg) scale(1);
+  }
+
+  .template-checkbox .tpl-icon {
+    font-size: 1em;
+    line-height: 1;
+    opacity: 0.9;
+  }
+
+  .template-checkbox .tpl-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .selected-chips {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 8px;
-    min-height: 28px;
+    margin-top: 12px;
+    min-height: 32px;
+    padding: 6px 0;
   }
 
   .selected-chips:empty::before {
-    content: 'No templates selected';
+    content: '⚠️  No templates selected — pick at least one';
     color: #adb5bd;
     font-style: italic;
     font-size: 0.85em;
-    padding: 4px 0;
+    padding: 4px 4px;
+  }
+
+  .selected-chips .chips-label {
+    font-size: 0.78em;
+    color: #6c757d;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    align-self: center;
+    margin-right: 4px;
   }
 
   .chip {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 3px 10px 3px 12px;
-    background: linear-gradient(45deg, #007bff, #0056b3);
+    padding: 5px 6px 5px 12px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: white;
-    border-radius: 14px;
+    border-radius: 16px;
     font-size: 0.82em;
     font-weight: 500;
+    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
   }
 
   .chip .x {
     cursor: pointer;
     font-weight: bold;
-    opacity: 0.85;
-    padding: 0 2px;
+    opacity: 0.9;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+    font-size: 0.95em;
     line-height: 1;
+    transition: background 0.15s;
   }
 
-  .chip .x:hover { opacity: 1; }
+  .chip .x:hover { background: rgba(255, 255, 255, 0.35); opacity: 1; }
 
   .template-description {
     margin-top: 12px;
@@ -730,15 +831,29 @@
   // Categorisation. Templates listed under an exclusive group can only be picked
   // one at a time; non-exclusive groups allow free combination.
   const TEMPLATE_CATEGORIES = [
-    { name: 'General',         exclusive: false, members: ['default', 'minimum'] },
-    { name: 'Technology',      exclusive: true,  members: ['ms-proteomics', 'affinity-proteomics', 'ms-metabolomics', 'lc-ms-metabolomics', 'gc-ms-metabolomics'] },
-    { name: 'Experiment type', exclusive: false, members: ['dia-acquisition', 'crosslinking', 'single-cell', 'immunopeptidomics'] },
-    { name: 'Affinity assay',  exclusive: true,  members: ['olink', 'somascan'] },
-    { name: 'Organism',        exclusive: true,  members: ['human', 'vertebrates', 'invertebrates', 'plants'] },
-    { name: 'Sample',          exclusive: false, members: ['cell-lines'] },
-    { name: 'Clinical',        exclusive: true,  members: ['clinical-metadata', 'oncology-metadata'] },
-    { name: 'Metaproteomics',  exclusive: true,  members: ['metaproteomics', 'human-gut', 'soil', 'water'] },
+    { name: 'General',         icon: '📋', exclusive: false, members: ['default', 'minimum'] },
+    { name: 'Technology',      icon: '🔬', exclusive: true,  members: ['ms-proteomics', 'affinity-proteomics', 'ms-metabolomics', 'lc-ms-metabolomics', 'gc-ms-metabolomics'] },
+    { name: 'Experiment type', icon: '🧪', exclusive: false, members: ['dia-acquisition', 'crosslinking', 'single-cell', 'immunopeptidomics'] },
+    { name: 'Affinity assay',  icon: '🎯', exclusive: true,  members: ['olink', 'somascan'] },
+    { name: 'Organism',        icon: '🧬', exclusive: true,  members: ['human', 'vertebrates', 'invertebrates', 'plants'] },
+    { name: 'Sample',          icon: '🧫', exclusive: false, members: ['cell-lines'] },
+    { name: 'Clinical',        icon: '🩺', exclusive: true,  members: ['clinical-metadata', 'oncology-metadata'] },
+    { name: 'Metaproteomics',  icon: '🦠', exclusive: true,  members: ['metaproteomics', 'human-gut', 'soil', 'water'] },
   ];
+
+  // Per-template glyph for the card. Falls back to a neutral dot if absent.
+  const TEMPLATE_ICONS = {
+    'default': '📄', 'minimum': '➖',
+    'ms-proteomics': '🔬', 'affinity-proteomics': '🎯',
+    'ms-metabolomics': '⚗️', 'lc-ms-metabolomics': '⚗️', 'gc-ms-metabolomics': '⚗️',
+    'dia-acquisition': '📊', 'crosslinking': '🔗',
+    'single-cell': '🔘', 'immunopeptidomics': '🛡️',
+    'olink': '💧', 'somascan': '🧬',
+    'human': '👤', 'vertebrates': '🐭', 'invertebrates': '🦋', 'plants': '🌱',
+    'cell-lines': '🧫',
+    'clinical-metadata': '🩺', 'oncology-metadata': '🎗️',
+    'metaproteomics': '🦠', 'human-gut': '🫃', 'soil': '🌍', 'water': '💧',
+  };
   const skipOntology = document.getElementById('skip-ontology');
   const useCacheOnly = document.getElementById('use-ols-cache-only');
   const dropZone = document.getElementById('drop-zone');
@@ -801,6 +916,7 @@
     const groups = TEMPLATE_CATEGORIES
       .map((c) => ({
         name: c.name,
+        icon: c.icon,
         exclusive: c.exclusive,
         members: c.members.filter((m) => allNames.has(m)),
       }))
@@ -811,7 +927,7 @@
       .filter((n) => !inAnyCategory.has(n))
       .sort();
     if (otherMembers.length) {
-      groups.push({ name: 'Other', exclusive: false, members: otherMembers });
+      groups.push({ name: 'Other', icon: '📦', exclusive: false, members: otherMembers });
     }
 
     templatePicker.innerHTML = '';
@@ -821,14 +937,15 @@
 
       const header = document.createElement('div');
       header.className = 'template-group-header';
-      header.textContent = g.name;
-      if (g.exclusive) {
-        const pill = document.createElement('span');
-        pill.className = 'group-pill';
-        pill.textContent = 'pick one';
-        header.appendChild(pill);
-      }
+      header.innerHTML = `
+        <span class="icon">${escapeHtml(g.icon || '•')}</span>
+        <span class="name">${escapeHtml(g.name)}</span>
+        ${g.exclusive ? '<span class="group-pill">single choice</span>' : ''}
+      `;
       groupEl.appendChild(header);
+
+      const grid = document.createElement('div');
+      grid.className = 'template-grid';
 
       for (const m of g.members) {
         const wrapper = document.createElement('label');
@@ -842,13 +959,24 @@
         if (m === 'default') cb.checked = true;
         cb.addEventListener('change', onTemplateChange);
 
+        const indicator = document.createElement('span');
+        indicator.className = 'check-indicator';
+
+        const icon = document.createElement('span');
+        icon.className = 'tpl-icon';
+        icon.textContent = TEMPLATE_ICONS[m] || '•';
+
         const label = document.createElement('span');
+        label.className = 'tpl-name';
         label.textContent = humanizeName(m);
 
         wrapper.appendChild(cb);
+        wrapper.appendChild(indicator);
+        wrapper.appendChild(icon);
         wrapper.appendChild(label);
-        groupEl.appendChild(wrapper);
+        grid.appendChild(wrapper);
       }
+      groupEl.appendChild(grid);
       templatePicker.appendChild(groupEl);
     }
   }
@@ -887,15 +1015,26 @@
   function renderChips() {
     const selected = getSelectedTemplates();
     selectedChips.innerHTML = '';
+    if (selected.length === 0) return;
+    const lbl = document.createElement('span');
+    lbl.className = 'chips-label';
+    lbl.textContent = 'Selected:';
+    selectedChips.appendChild(lbl);
     for (const name of selected) {
       const chip = document.createElement('span');
       chip.className = 'chip';
-      chip.textContent = humanizeName(name) + ' ';
+      const icon = document.createElement('span');
+      icon.textContent = TEMPLATE_ICONS[name] || '•';
+      const txt = document.createElement('span');
+      txt.textContent = humanizeName(name);
+      chip.appendChild(icon);
+      chip.appendChild(txt);
       const x = document.createElement('span');
       x.className = 'x';
       x.textContent = '×';
       x.title = 'Remove';
-      x.addEventListener('click', () => {
+      x.addEventListener('click', (ev) => {
+        ev.preventDefault();
         const cb = templatePicker.querySelector('input[type="checkbox"][value="' + cssEscape(name) + '"]');
         if (cb) {
           cb.checked = false;
