@@ -886,7 +886,7 @@
     </p>
     <div class="about-links">
       <a class="lnk-blue" href="https://github.com/bigbio/sdrf-pipelines" target="_blank">🌐 sdrf-pipelines</a>
-      <a class="lnk-green" href="docs" target="_blank">📂 API Docs</a>
+      <a class="lnk-green" id="api-docs-link" href="docs" target="_blank">📂 API Docs</a>
       <a class="lnk-purple" href="https://www.ebi.ac.uk/pride/" target="_blank">📊 PRIDE Archive</a>
     </div>
     <div class="footer">
@@ -1036,6 +1036,14 @@
   }
   const baseUrl = computeApiBase();
   const apiUrl = (path) => baseUrl + String(path).replace(/^\/+/, '');
+
+  // Rewrite the docs link to an absolute URL anchored at the API base. The
+  // raw `href="docs"` resolves against window.location, which drops the last
+  // path segment when the page URL has no trailing slash — e.g. visiting
+  // /pride/services/sdrf-validator (no slash) would link to
+  // /pride/services/docs instead of /pride/services/sdrf-validator/docs.
+  const docsLink = document.getElementById('api-docs-link');
+  if (docsLink) docsLink.href = apiUrl('docs');
 
   function showError(msg) {
     errorBanner.textContent = msg;
