@@ -148,7 +148,11 @@
   .template-group-header .icon {
     font-size: 1.1em;
     line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    color: #495057;
   }
+  .template-group-header .icon svg { width: 18px; height: 18px; }
 
   .template-group-header .name {
     font-size: 0.78em;
@@ -316,7 +320,14 @@
     font-size: 1em;
     line-height: 1;
     opacity: 0.9;
+    display: inline-flex;
+    align-items: center;
+    color: #495057;
   }
+  .template-checkbox .tpl-icon svg { width: 16px; height: 16px; }
+  .template-checkbox.checked .tpl-icon { color: #0056b3; opacity: 1; }
+  .chip svg { width: 14px; height: 14px; }
+  .dev-toggle svg { width: 16px; height: 16px; vertical-align: -3px; }
 
   .template-checkbox .tpl-name {
     flex: 1;
@@ -894,56 +905,108 @@
   // same group — they get rendered indented beneath the parent. Exclusive groups
   // allow only one selection; non-exclusive allow free combination.
   // `dev: true` groups are hidden behind the "Show dev templates" toggle.
+  // Inline SVG icon set (Lucide-style, monochrome, 24x24 viewBox).
+  // Kept inline so the page stays self-contained with no network fetch.
+  const SVG_ICONS = {
+    'file-text':     '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/>',
+    'file-minus':    '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><line x1="9" y1="14" x2="15" y2="14"/>',
+    'clipboard':     '<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/>',
+    'clipboard-list':'<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="15" y2="15"/>',
+    'flask':         '<path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3"/><path d="M7 15h10"/>',
+    'flask-round':   '<path d="M9 3h6"/><path d="M10 3v5L5 19a1.5 1.5 0 0 0 1.4 2h11.2A1.5 1.5 0 0 0 19 19L14 8V3"/>',
+    'beaker':        '<path d="M6 3h12"/><path d="M7 3v6L4 18a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-3-9V3"/>',
+    'link':          '<path d="M9 17H7a5 5 0 0 1 0-10h2"/><path d="M15 7h2a5 5 0 0 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/>',
+    'activity':      '<polyline points="3 12 7 12 10 4 14 20 17 12 21 12"/>',
+    'git-merge':     '<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M6 8.5v3a6 6 0 0 0 6 6h3.5"/>',
+    'circle-dot':    '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2" fill="currentColor"/>',
+    'shield-check':  '<path d="M12 3l8 3v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><polyline points="9 12 11 14 15 10"/>',
+    'droplet':       '<path d="M12 3c-3 4.5-7 7.5-7 12a7 7 0 0 0 14 0c0-4.5-4-7.5-7-12z"/>',
+    'droplets':      '<path d="M9 4c-2 3-4 5-4 8a4 4 0 0 0 8 0c0-3-2-5-4-8z"/><path d="M16 11c-1.5 2.2-3 3.7-3 6a3 3 0 0 0 6 0c0-2.3-1.5-3.8-3-6z"/>',
+    'dna':           '<path d="M7 3v18"/><path d="M17 3v18"/><path d="M7 7c2 1 8 1 10 0"/><path d="M7 12c2-1 8-1 10 0"/><path d="M7 17c2 1 8 1 10 0"/>',
+    'user':          '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
+    'fish':          '<path d="M19 12c-3-4-7-6-13-6 1.5 2 1.5 4 0 6 1.5 2 1.5 4 0 6 6 0 10-2 13-6z"/><path d="M19 12l3-2v4z"/><circle cx="9" cy="11" r="0.6" fill="currentColor"/>',
+    'bug':           '<ellipse cx="12" cy="13" rx="5" ry="6"/><path d="M12 7V4"/><path d="M9 5l-1-2"/><path d="M15 5l1-2"/><path d="M7 11l-3-1"/><path d="M7 14H4"/><path d="M7 17l-3 2"/><path d="M17 11l3-1"/><path d="M17 14h3"/><path d="M17 17l3 2"/>',
+    'leaf':          '<path d="M5 19c0-8 6-14 14-15-1 8-6 14-14 15z"/><path d="M5 19c3-4 6-7 10-9"/>',
+    'petri':         '<ellipse cx="12" cy="14" rx="9" ry="4"/><path d="M3 14V11a9 4 0 0 1 18 0v3"/><circle cx="9" cy="13" r="0.8" fill="currentColor"/><circle cx="14" cy="14" r="0.8" fill="currentColor"/><circle cx="11" cy="15" r="0.7" fill="currentColor"/>',
+    'stethoscope':   '<path d="M5 3v6a4 4 0 0 0 8 0V3"/><path d="M4 3h2"/><path d="M12 3h2"/><path d="M9 13v2a4 4 0 0 0 4 4 4 4 0 0 0 4-4v-2"/><circle cx="17" cy="11" r="2"/>',
+    'target':        '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
+    'microbe':       '<circle cx="12" cy="12" r="6"/><circle cx="10" cy="10" r="0.9" fill="currentColor"/><circle cx="14" cy="11" r="0.9" fill="currentColor"/><circle cx="11" cy="14" r="0.9" fill="currentColor"/><line x1="6.5" y1="6.5" x2="4" y2="4"/><line x1="17.5" y1="6.5" x2="20" y2="4"/><line x1="6.5" y1="17.5" x2="4" y2="20"/><line x1="17.5" y1="17.5" x2="20" y2="20"/>',
+    'gut':           '<path d="M5 5h10a3 3 0 0 1 0 6h-8a3 3 0 0 0 0 6h12"/>',
+    'sprout':        '<path d="M7 21h10"/><path d="M12 21v-9"/><path d="M12 12c-3 0-6-2-6-6 3 0 6 2 6 6z"/><path d="M12 12c3 0 6-2 6-6-3 0-6 2-6 6z"/>',
+    'test-tube':     '<path d="M14 2v14a3 3 0 0 1-6 0V2"/><path d="M8 2h6"/><path d="M9 11h4"/>',
+  };
+
+  function iconSVG(name) {
+    const body = SVG_ICONS[name];
+    if (!body) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + body + '</svg>';
+  }
+
   const TEMPLATE_CATEGORIES = [
-    { name: 'General',         icon: '📋', exclusive: false, members: [
+    { name: 'General',         icon: 'clipboard',   exclusive: false, members: [
       { name: 'default' }, { name: 'minimum' },
     ]},
-    { name: 'Technology',      icon: '🔬', exclusive: true, members: [
+    { name: 'Technology',      icon: 'flask',       exclusive: true, members: [
       { name: 'ms-proteomics' }, { name: 'affinity-proteomics' },
     ]},
-    { name: 'Experiment type', icon: '🧪', exclusive: false, members: [
+    { name: 'Experiment type', icon: 'beaker',      exclusive: false, members: [
       { name: 'dia-acquisition' }, { name: 'crosslinking' },
       { name: 'single-cell' },     { name: 'immunopeptidomics' },
     ]},
-    { name: 'Affinity assay',  icon: '🎯', exclusive: true, members: [
+    { name: 'Affinity assay',  icon: 'link',        exclusive: true, members: [
       { name: 'olink' }, { name: 'somascan' },
     ]},
-    { name: 'Organism',        icon: '🧬', exclusive: true, members: [
+    { name: 'Organism',        icon: 'dna',         exclusive: true, members: [
       { name: 'human' }, { name: 'vertebrates' },
       { name: 'invertebrates' }, { name: 'plants' },
     ]},
-    { name: 'Sample',          icon: '🧫', exclusive: false, members: [
+    { name: 'Sample',          icon: 'test-tube',   exclusive: false, members: [
       { name: 'sample-metadata' }, { name: 'cell-lines' },
     ]},
-    { name: 'Clinical',        icon: '🩺', exclusive: true, members: [
+    { name: 'Clinical',        icon: 'stethoscope', exclusive: true, members: [
       { name: 'clinical-metadata' },
       { name: 'oncology-metadata', parent: 'clinical-metadata' },
     ]},
-    { name: 'Metaproteomics',  icon: '🦠', exclusive: true, members: [
+    { name: 'Metaproteomics',  icon: 'microbe',     exclusive: true, members: [
       { name: 'metaproteomics' },
       { name: 'human-gut', parent: 'metaproteomics' },
       { name: 'soil',      parent: 'metaproteomics' },
       { name: 'water',     parent: 'metaproteomics' },
     ]},
-    { name: 'Metabolomics (dev)', icon: '⚗️', exclusive: true, dev: true, members: [
+    { name: 'Metabolomics (dev)', icon: 'flask-round', exclusive: true, dev: true, members: [
       { name: 'ms-metabolomics' },
       { name: 'lc-ms-metabolomics', parent: 'ms-metabolomics' },
       { name: 'gc-ms-metabolomics', parent: 'ms-metabolomics' },
     ]},
   ];
 
-  // Per-template glyph for the card. Falls back to a neutral dot if absent.
+  // Per-template icon names. Resolved through SVG_ICONS via iconSVG().
   const TEMPLATE_ICONS = {
-    'default': '📄', 'minimum': '➖',
-    'ms-proteomics': '🔬', 'affinity-proteomics': '🎯',
-    'ms-metabolomics': '⚗️', 'lc-ms-metabolomics': '⚗️', 'gc-ms-metabolomics': '⚗️',
-    'dia-acquisition': '📊', 'crosslinking': '🔗',
-    'single-cell': '🔘', 'immunopeptidomics': '🛡️',
-    'olink': '💧', 'somascan': '🧬',
-    'human': '👤', 'vertebrates': '🐭', 'invertebrates': '🦋', 'plants': '🌱',
-    'sample-metadata': '🏷️', 'cell-lines': '🧫',
-    'clinical-metadata': '🩺', 'oncology-metadata': '🎗️',
-    'metaproteomics': '🦠', 'human-gut': '🫃', 'soil': '🌍', 'water': '💧',
+    'default':            'file-text',
+    'minimum':            'file-minus',
+    'ms-proteomics':      'flask',
+    'affinity-proteomics':'link',
+    'ms-metabolomics':    'flask-round',
+    'lc-ms-metabolomics': 'flask-round',
+    'gc-ms-metabolomics': 'flask-round',
+    'dia-acquisition':    'activity',
+    'crosslinking':       'git-merge',
+    'single-cell':        'circle-dot',
+    'immunopeptidomics':  'shield-check',
+    'olink':              'droplet',
+    'somascan':           'dna',
+    'human':              'user',
+    'vertebrates':        'fish',
+    'invertebrates':      'bug',
+    'plants':             'leaf',
+    'sample-metadata':    'clipboard-list',
+    'cell-lines':         'petri',
+    'clinical-metadata':  'stethoscope',
+    'oncology-metadata':  'target',
+    'metaproteomics':     'microbe',
+    'human-gut':          'gut',
+    'soil':               'sprout',
+    'water':              'droplets',
   };
   const skipOntology = document.getElementById('skip-ontology');
   const useCacheOnly = document.getElementById('use-ols-cache-only');
@@ -1034,7 +1097,7 @@
       const header = document.createElement('div');
       header.className = 'template-group-header';
       header.innerHTML = `
-        <span class="icon">${escapeHtml(g.icon || '•')}</span>
+        <span class="icon">${iconSVG(g.icon)}</span>
         <span class="name">${escapeHtml(g.name)}</span>
         ${g.exclusive ? '<span class="group-pill">single choice</span>' : ''}
       `;
@@ -1061,7 +1124,7 @@
 
         const icon = document.createElement('span');
         icon.className = 'tpl-icon';
-        icon.textContent = TEMPLATE_ICONS[m.name] || '•';
+        icon.innerHTML = iconSVG(TEMPLATE_ICONS[m.name]);
 
         const label = document.createElement('span');
         label.className = 'tpl-name';
@@ -1085,7 +1148,7 @@
       btn.id = 'dev-toggle';
       btn.type = 'button';
       btn.className = 'dev-toggle';
-      btn.innerHTML = '<span class="lbl">⚗️ Show dev templates (metabolomics)</span><span class="arrow">▾</span>';
+      btn.innerHTML = '<span class="lbl">' + iconSVG('flask-round') + ' Show dev templates (metabolomics)</span><span class="arrow">▾</span>';
       btn.addEventListener('click', toggleDev);
       templatePicker.parentNode.insertBefore(btn, templatePicker.nextSibling);
     }
@@ -1097,9 +1160,9 @@
     document.querySelectorAll('.template-group.dev-group').forEach((g) => {
       g.classList.toggle('shown', expanded);
     });
-    btn.querySelector('.lbl').textContent = expanded
-      ? '⚗️ Hide dev templates (metabolomics)'
-      : '⚗️ Show dev templates (metabolomics)';
+    btn.querySelector('.lbl').innerHTML = iconSVG('flask-round') + (expanded
+      ? ' Hide dev templates (metabolomics)'
+      : ' Show dev templates (metabolomics)');
     if (!expanded) {
       // Uncheck dev members on hide so they don't get sent silently
       document.querySelectorAll('.template-group.dev-group input[type="checkbox"]:checked').forEach((cb) => {
@@ -1152,7 +1215,7 @@
       const chip = document.createElement('span');
       chip.className = 'chip';
       const icon = document.createElement('span');
-      icon.textContent = TEMPLATE_ICONS[name] || '•';
+      icon.innerHTML = iconSVG(TEMPLATE_ICONS[name]);
       const txt = document.createElement('span');
       txt.textContent = humanizeName(name);
       chip.appendChild(icon);
