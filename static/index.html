@@ -178,6 +178,68 @@
     padding: 0 2px;
   }
 
+  /* Tree-view groups (those with parent/child inheritance) use a single column
+     so children can sit under their parent with a connector. */
+  .template-group.has-tree .template-grid {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .template-checkbox.tpl-child {
+    margin-left: 28px;
+    position: relative;
+  }
+
+  .template-checkbox.tpl-child::before {
+    content: '';
+    position: absolute;
+    left: -18px;
+    top: 0;
+    bottom: 50%;
+    width: 12px;
+    border-left: 1.5px solid #ced4da;
+    border-bottom: 1.5px solid #ced4da;
+    border-bottom-left-radius: 6px;
+    pointer-events: none;
+  }
+
+  /* Dev category — hidden until toggle button reveals it. */
+  .template-group.dev-group { display: none; }
+  .template-group.dev-group.shown { display: block; }
+
+  .dev-toggle {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    background: white;
+    border: 2px dashed #ced4da;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #495057;
+    font-weight: 600;
+    font-size: 0.9em;
+    font-family: inherit;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .dev-toggle:hover {
+    border-color: #007bff;
+    background: #f0f7ff;
+    color: #007bff;
+  }
+
+  .dev-toggle .arrow {
+    display: inline-block;
+    transition: transform 0.2s;
+    font-size: 0.85em;
+  }
+
+  .dev-toggle.expanded .arrow { transform: rotate(180deg); }
+
   .template-checkbox {
     position: relative;
     display: flex;
@@ -828,17 +890,46 @@
   const templateDescription = document.getElementById('template-description');
   const templateInfo = {};
 
-  // Categorisation. Templates listed under an exclusive group can only be picked
-  // one at a time; non-exclusive groups allow free combination.
+  // Categorisation. `parent` marks templates that inherit from another in the
+  // same group — they get rendered indented beneath the parent. Exclusive groups
+  // allow only one selection; non-exclusive allow free combination.
+  // `dev: true` groups are hidden behind the "Show dev templates" toggle.
   const TEMPLATE_CATEGORIES = [
-    { name: 'General',         icon: '📋', exclusive: false, members: ['default', 'minimum'] },
-    { name: 'Technology',      icon: '🔬', exclusive: true,  members: ['ms-proteomics', 'affinity-proteomics', 'ms-metabolomics', 'lc-ms-metabolomics', 'gc-ms-metabolomics'] },
-    { name: 'Experiment type', icon: '🧪', exclusive: false, members: ['dia-acquisition', 'crosslinking', 'single-cell', 'immunopeptidomics'] },
-    { name: 'Affinity assay',  icon: '🎯', exclusive: true,  members: ['olink', 'somascan'] },
-    { name: 'Organism',        icon: '🧬', exclusive: true,  members: ['human', 'vertebrates', 'invertebrates', 'plants'] },
-    { name: 'Sample',          icon: '🧫', exclusive: false, members: ['cell-lines'] },
-    { name: 'Clinical',        icon: '🩺', exclusive: true,  members: ['clinical-metadata', 'oncology-metadata'] },
-    { name: 'Metaproteomics',  icon: '🦠', exclusive: true,  members: ['metaproteomics', 'human-gut', 'soil', 'water'] },
+    { name: 'General',         icon: '📋', exclusive: false, members: [
+      { name: 'default' }, { name: 'minimum' },
+    ]},
+    { name: 'Technology',      icon: '🔬', exclusive: true, members: [
+      { name: 'ms-proteomics' }, { name: 'affinity-proteomics' },
+    ]},
+    { name: 'Experiment type', icon: '🧪', exclusive: false, members: [
+      { name: 'dia-acquisition' }, { name: 'crosslinking' },
+      { name: 'single-cell' },     { name: 'immunopeptidomics' },
+    ]},
+    { name: 'Affinity assay',  icon: '🎯', exclusive: true, members: [
+      { name: 'olink' }, { name: 'somascan' },
+    ]},
+    { name: 'Organism',        icon: '🧬', exclusive: true, members: [
+      { name: 'human' }, { name: 'vertebrates' },
+      { name: 'invertebrates' }, { name: 'plants' },
+    ]},
+    { name: 'Sample',          icon: '🧫', exclusive: false, members: [
+      { name: 'sample-metadata' }, { name: 'cell-lines' },
+    ]},
+    { name: 'Clinical',        icon: '🩺', exclusive: true, members: [
+      { name: 'clinical-metadata' },
+      { name: 'oncology-metadata', parent: 'clinical-metadata' },
+    ]},
+    { name: 'Metaproteomics',  icon: '🦠', exclusive: true, members: [
+      { name: 'metaproteomics' },
+      { name: 'human-gut', parent: 'metaproteomics' },
+      { name: 'soil',      parent: 'metaproteomics' },
+      { name: 'water',     parent: 'metaproteomics' },
+    ]},
+    { name: 'Metabolomics (dev)', icon: '⚗️', exclusive: true, dev: true, members: [
+      { name: 'ms-metabolomics' },
+      { name: 'lc-ms-metabolomics', parent: 'ms-metabolomics' },
+      { name: 'gc-ms-metabolomics', parent: 'ms-metabolomics' },
+    ]},
   ];
 
   // Per-template glyph for the card. Falls back to a neutral dot if absent.
@@ -850,7 +941,7 @@
     'single-cell': '🔘', 'immunopeptidomics': '🛡️',
     'olink': '💧', 'somascan': '🧬',
     'human': '👤', 'vertebrates': '🐭', 'invertebrates': '🦋', 'plants': '🌱',
-    'cell-lines': '🧫',
+    'sample-metadata': '🏷️', 'cell-lines': '🧫',
     'clinical-metadata': '🩺', 'oncology-metadata': '🎗️',
     'metaproteomics': '🦠', 'human-gut': '🫃', 'soil': '🌍', 'water': '💧',
   };
@@ -920,30 +1011,25 @@
 
   function renderTemplatePicker(templates) {
     const allNames = new Set(templates.map((t) => t.name));
-    const inAnyCategory = new Set();
-    TEMPLATE_CATEGORIES.forEach((c) => c.members.forEach((m) => inAnyCategory.add(m)));
 
     const groups = TEMPLATE_CATEGORIES
       .map((c) => ({
-        name: c.name,
-        icon: c.icon,
-        exclusive: c.exclusive,
-        members: c.members.filter((m) => allNames.has(m)),
+        ...c,
+        members: c.members.filter((m) => allNames.has(m.name)),
       }))
       .filter((g) => g.members.length > 0);
 
-    const otherMembers = templates
-      .map((t) => t.name)
-      .filter((n) => !inAnyCategory.has(n))
-      .sort();
-    if (otherMembers.length) {
-      groups.push({ name: 'Other', icon: '📦', exclusive: false, members: otherMembers });
-    }
-
     templatePicker.innerHTML = '';
+    let anyDev = false;
+
     for (const g of groups) {
+      const isDev = !!g.dev;
+      if (isDev) anyDev = true;
+
       const groupEl = document.createElement('div');
       groupEl.className = 'template-group';
+      if (g.members.some((m) => m.parent)) groupEl.classList.add('has-tree');
+      if (isDev) groupEl.classList.add('dev-group');
 
       const header = document.createElement('div');
       header.className = 'template-group-header';
@@ -960,13 +1046,14 @@
       for (const m of g.members) {
         const wrapper = document.createElement('label');
         wrapper.className = 'template-checkbox';
+        if (m.parent) wrapper.classList.add('tpl-child');
         wrapper.dataset.group = g.name;
         wrapper.dataset.exclusive = String(g.exclusive);
 
         const cb = document.createElement('input');
         cb.type = 'checkbox';
-        cb.value = m;
-        if (m === 'default') cb.checked = true;
+        cb.value = m.name;
+        if (m.name === 'default') cb.checked = true;
         cb.addEventListener('change', onTemplateChange);
 
         const indicator = document.createElement('span');
@@ -974,11 +1061,11 @@
 
         const icon = document.createElement('span');
         icon.className = 'tpl-icon';
-        icon.textContent = TEMPLATE_ICONS[m] || '•';
+        icon.textContent = TEMPLATE_ICONS[m.name] || '•';
 
         const label = document.createElement('span');
         label.className = 'tpl-name';
-        label.textContent = humanizeName(m);
+        label.textContent = humanizeName(m.name);
 
         wrapper.appendChild(cb);
         wrapper.appendChild(indicator);
@@ -988,6 +1075,37 @@
       }
       groupEl.appendChild(grid);
       templatePicker.appendChild(groupEl);
+    }
+
+    // Dev-template toggle button (only when at least one dev group exists)
+    const existingToggle = document.getElementById('dev-toggle');
+    if (existingToggle) existingToggle.remove();
+    if (anyDev) {
+      const btn = document.createElement('button');
+      btn.id = 'dev-toggle';
+      btn.type = 'button';
+      btn.className = 'dev-toggle';
+      btn.innerHTML = '<span class="lbl">⚗️ Show dev templates (metabolomics)</span><span class="arrow">▾</span>';
+      btn.addEventListener('click', toggleDev);
+      templatePicker.parentNode.insertBefore(btn, templatePicker.nextSibling);
+    }
+  }
+
+  function toggleDev() {
+    const btn = document.getElementById('dev-toggle');
+    const expanded = btn.classList.toggle('expanded');
+    document.querySelectorAll('.template-group.dev-group').forEach((g) => {
+      g.classList.toggle('shown', expanded);
+    });
+    btn.querySelector('.lbl').textContent = expanded
+      ? '⚗️ Hide dev templates (metabolomics)'
+      : '⚗️ Show dev templates (metabolomics)';
+    if (!expanded) {
+      // Uncheck dev members on hide so they don't get sent silently
+      document.querySelectorAll('.template-group.dev-group input[type="checkbox"]:checked').forEach((cb) => {
+        cb.checked = false;
+      });
+      updateSelection();
     }
   }
 
