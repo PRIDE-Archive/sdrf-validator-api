@@ -4,6 +4,21 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SDRF Validator</title>
+<script>
+  // Inject a <base href> matching the page's directory. Without this the URL
+  // spec resolves relative hrefs like "docs" against the *parent* directory
+  // when the page URL has no trailing slash (e.g. /sdrf-validator → /docs in
+  // the parent). With this, every relative link in the page resolves against
+  // the correct service prefix, regardless of trailing slash.
+  (function () {
+    var p = window.location.pathname || '/';
+    while (p.length > 1 && p.charAt(p.length - 1) === '/') p = p.slice(0, -1);
+    if (p.charAt(p.length - 1) !== '/') p = p + '/';
+    var b = document.createElement('base');
+    b.href = window.location.origin + p;
+    document.head.appendChild(b);
+  })();
+</script>
 <style>
   * {
     margin: 0;
