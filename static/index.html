@@ -1274,7 +1274,10 @@
   }
 
   function updateValidateButton() {
-    validateBtn.disabled = !selectedFile || getSelectedTemplates().length === 0;
+    // Only gate the button on having a file. A missing template is reported
+    // with a clear error when the user clicks Validate (see validate()), so
+    // the button doesn't just silently do nothing.
+    validateBtn.disabled = !selectedFile;
   }
 
   function setFile(file) {
@@ -1319,6 +1322,13 @@
   async function validate() {
     if (!selectedFile) return;
     clearError();
+
+    if (getSelectedTemplates().length === 0) {
+      showError('Please select at least one template below before validating.');
+      templatePicker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     validateBtn.disabled = true;
     validateBtn.innerHTML = '<span class="loading"></span>Validating…';
     resultsCard.classList.add('hidden');
