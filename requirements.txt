@@ -7,7 +7,6 @@ python-multipart>=0.0.6
 # image vendors the matching sdrf-templates (0.1.6: environmental medium
 # required; environmental sample type no longer required). An unpinned git
 # URL reports whatever tag was latest at image-build time, which is why
-# production is still on 0.1.5.
 sdrf-pipelines==0.1.6
 
 # Utilities
